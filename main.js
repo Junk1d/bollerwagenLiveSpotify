@@ -16,107 +16,106 @@ var data;
 var dataSp;
 var reqUrlSp;
 var expires_at;
-
+let OAuthSp;
 // var OAuthTw;
 // var OAuRefreshTokenSp;
 
 let radiobollerwagen =
   "https://www.ffn.de/fileadmin/content/playlist-xml/radiobollerwagen.json";
 state = makeid(20);
-// let serialize = function (obj) {
-//   var str = [];
-//   for (var p in obj) {
-//     if (obj.hasOwnProperty(p)) {
-//       str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
-//     }
-//   }
-//   return str.join("&");
-// };
+let serialize = function (obj) {
+  var str = [];
+  for (var p in obj) {
+    if (obj.hasOwnProperty(p)) {
+      str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+    }
+  }
+  return str.join("&");
+};
 
 // StartUpSpotify();
-// async function StartUpSpotify() {
-//   try {
-//     dataSp = JSON.parse(fs.readFileSync("./spotify.json", "utf8"));
-//     if (dataSp.refresh_token == "INITIAL_REFRESH_TOKEN") {
-//       // TokenSpotify();
-//     } else {
-//       if (await refeshTokenSp()) {
-//         Main();
-//       }
-//       // else TokenSpotify();
-//     }
-//   } catch (err) {
-//     if (err.code == "ENOENT") {
-//       console.error(err.code);
-//       // TokenSpotify();
-//     }
-//   }
-// }
-// async function refeshTokenSp() {
-//   const str =
-//     (await process.env.CLIENT_ID_SPOTIFY) +
-//     ":" +
-//     (await process.env.CLIENT_SECRET_SPOTIFY);
-//   const buff = await Buffer.from(str, "utf-8");
-//   const base64 = await buff.toString("base64");
-//   const responseRefesh = await axios
-//     .post(
-//       "https://accounts.spotify.com/api/token",
-//       await serialize({
-//         refresh_token: dataSp.refresh_token,
-//         grant_type: "refresh_token",
-//       }),
-//       {
-//         headers: {
-//           Authorization: "Basic " + base64,
-//         },
-//       }
-//     )
-//     .catch((err) => {
-//       console.log(err);
-//     });
+async function StartUpSpotify() {
+  try {
+    dataSp = JSON.parse(fs.readFileSync("./spotify.json", "utf8"));
+    if (dataSp.refresh_token == "INITIAL_REFRESH_TOKEN") {
+      TokenSpotify();
+    } else {
+      if (await refeshTokenSp()) {
+        Main();
+      } else TokenSpotify();
+    }
+  } catch (err) {
+    if (err.code == "ENOENT") {
+      console.error(err.code);
+      TokenSpotify();
+    }
+  }
+}
+async function refeshTokenSp() {
+  const str =
+    (await process.env.CLIENT_ID_SPOTIFY) +
+    ":" +
+    (await process.env.CLIENT_SECRET_SPOTIFY);
+  const buff = await Buffer.from(str, "utf-8");
+  const base64 = await buff.toString("base64");
+  const responseRefesh = await axios
+    .post(
+      "https://accounts.spotify.com/api/token",
+      await serialize({
+        refresh_token: dataSp.refresh_token,
+        grant_type: "refresh_token",
+      }),
+      {
+        headers: {
+          Authorization: "Basic " + base64,
+        },
+      }
+    )
+    .catch((err) => {
+      console.log(err);
+    });
 
-//   if (responseRefesh.status == 200) {
-//     var d = new Date();
-//     expires_at = d.getTime + responseRefesh.data.expires_in * 1000;
-//     OAuthSp = responseRefesh.data.access_token;
-//     return true;
-//   } else return false;
-// }
+  if (responseRefesh.status == 200) {
+    var d = new Date();
+    expires_at = d.getTime + responseRefesh.data.expires_in * 1000;
+    OAuthSp = responseRefesh.data.access_token;
+    return true;
+  } else return false;
+}
 
 // TokenSpotify();
 
-// async function TokenSpotify() {
-//     state = makeid(20);
-//     // console.log(state);
-//     open(
-//         `https://accounts.spotify.com/authorize?response_type=code&client_id=${process.env.CLIENT_ID_SPOTIFY}` +
-//             "&redirect_uri=http://localhost:3000&" +
-//             `state=${state}` +
-//             "&scope=user-modify-playback-state playlist-modify-private playlist-modify-public"
-//     );
+async function TokenSpotify() {
+  state = makeid(20);
+  // console.log(state);
+  open(
+    `https://accounts.spotify.com/authorize?response_type=code&client_id=${process.env.CLIENT_ID_SPOTIFY}` +
+      "&redirect_uri=http://localhost:3000&" +
+      `state=${state}` +
+      "&scope=user-modify-playback-state playlist-modify-private playlist-modify-public"
+  );
 
-//     const server = await http
-//         .createServer(async function (req, res) {
-//             res.writeHeader(200, { "Content-Type": "text/html" });
-//             res.write("");
+  const server = await http
+    .createServer(async function (req, res) {
+      res.writeHeader(200, { "Content-Type": "text/html" });
+      res.write("");
 
-//             await setTimeout(async function () {
-//                 reqUrlSp = await url.parse(req.url, true).query;
-//                 if (state == reqUrlSp.state) {
-//                     // res.writeHeader(200, {
-//                     //     "Content-Type": "text/html",
-//                     // });
-//                     res.write("<script>close()</script>");
-//                     res.end();
-//                     server.close();
+      await setTimeout(async function () {
+        reqUrlSp = await url.parse(req.url, true).query;
+        if (state == reqUrlSp.state) {
+          // res.writeHeader(200, {
+          //     "Content-Type": "text/html",
+          // });
+          res.write("<script>close()</script>");
+          res.end();
+          server.close();
 
-//                     SpCodeToToken(reqUrlSp.code);
-//                 }
-//             }, 5000);
-//         })
-//         .listen(3000);
-// }
+          SpCodeToToken(reqUrlSp.code);
+        }
+      }, 5000);
+    })
+    .listen(3000);
+}
 
 async function CheckExpired() {
   var d = new Date();
@@ -150,7 +149,7 @@ async function SpCodeToToken(Code) {
       }
     )
     .catch((err) => {
-      console.log(err);
+      console.log(err.code);
     });
 
   if ((await responseTokenSp.status) == 200) {
@@ -159,7 +158,7 @@ async function SpCodeToToken(Code) {
       var d = new Date();
       expires_at = d.getTime + responseTokenSp.data.expires_in * 1000;
       OAuthSp = responseTokenSp.data.access_token;
-      OAuRefreshTokenSp = responseTokenSp.data.refresh_token;
+      // OAuRefreshTokenSp = responseTokenSp.data.refresh_token;
 
       fs.writeFileSync(
         "./spotify.json",
@@ -227,10 +226,10 @@ async function addToPlaylist(title, artist) {
   let findUri;
   try {
     let res = await api.get(
-      `/search?q=${title.replace(" ", "+")}+${artist.replace(
-        " ",
-        "+"
-      )}&type=track&limit=1`
+      `/search?q=${title.replace(" ", "+")}+${artist
+        .replace(" ", "+")
+        .replace("UND", "")
+        .replace(",", "")}&type=track&limit=1`
     );
     findUri = res.data.tracks.items[0].uri;
     try {

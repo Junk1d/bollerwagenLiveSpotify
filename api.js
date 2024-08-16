@@ -56,19 +56,19 @@ api.interceptors.response.use(
             },
           }
         );
-        fs.writeFileSync(
-          "./spotify.json",
-          JSON.stringify({
-            refresh_token: responseRefesh.data.refresh_token,
-          })
-        );
+        // fs.writeFileSync(
+        //   "./spotify.json",
+        //   JSON.stringify({
+        //     refresh_token: responseRefesh.data.refresh_token,
+        //   })
+        // );
         dataSp.refresh_token = responseRefesh.data.refresh_token;
         OAuthSp = responseRefesh.data.access_token;
         originalRequest.headers.Authorization =
           "Bearer " + responseRefesh.data.access_token;
         return api(originalRequest);
       } catch (error) {
-        console.log(error);
+        console.log(error.code);
       }
     }
 
