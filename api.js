@@ -1,6 +1,7 @@
 import fs from "fs";
 import axios from "axios";
 import { Buffer } from "buffer";
+import "dotenv/config";
 
 let OAuthSp;
 let serialize = function (obj) {
@@ -12,7 +13,8 @@ let serialize = function (obj) {
   }
   return str.join("&");
 };
-let dataSp = JSON.parse(fs.readFileSync("./spotify.json", "utf8"));
+let dataSp;
+dataSp = JSON.parse(fs.readFileSync("./spotify.json", "utf8"));
 let api = axios.create({
   baseURL: "https://api.spotify.com/v1",
 });
@@ -56,13 +58,16 @@ api.interceptors.response.use(
             },
           }
         );
-        // fs.writeFileSync(
-        //   "./spotify.json",
-        //   JSON.stringify({
-        //     refresh_token: responseRefesh.data.refresh_token,
-        //   })
-        // );
-        dataSp.refresh_token = responseRefesh.data.refresh_token;
+
+        if (responseRefesh.data.refresh_token) {
+          dataSp.refresh_token = responseRefesh.data.refresh_token;
+          fs.writeFileSync(
+            "./spotify.json",
+            JSON.stringify({
+              refresh_token: responseRefesh.data.refresh_token,
+            })
+          );
+        }
         OAuthSp = responseRefesh.data.access_token;
         originalRequest.headers.Authorization =
           "Bearer " + responseRefesh.data.access_token;

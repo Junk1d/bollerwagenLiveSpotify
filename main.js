@@ -227,8 +227,8 @@ async function addToPlaylist(title, artist) {
   try {
     let res = await api.get(
       `/search?q=${title.replace(" ", "+")}+${artist
+        .replace(" UND ", "+")
         .replace(" ", "+")
-        .replace("UND", "")
         .replace(",", "")}&type=track&limit=1`
     );
     findUri = res.data.tracks.items[0].uri;
