@@ -226,9 +226,10 @@ async function addToPlaylist(title, artist) {
   let findUri;
   try {
     let res = await api.get(
-      `/search?q=${title.replace(" ", "+")}+${artist
-        .replace(" UND ", "+")
-        .replace(" ", "+")
+      `/search?q=${title.replace(" ", "%2B")}+${artist
+        .replace(" UND ", "%2B")
+        .replace(" MIT ", "%2B")
+        .replace(" ", "%2B")
         .replace(",", "")}&type=track&limit=1`
     );
     findUri = res.data.tracks.items[0].uri;
