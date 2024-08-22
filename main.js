@@ -227,12 +227,36 @@ async function addToPlaylist(title, artist) {
   try {
     let res = await api.get(
       `/search?q=${encodeURI(
-        "track: " +
+        "track:" +
           title +
-          " artist: " +
+          " artist:" +
           artist.replace(" UND ", " ").replace(" MIT ", " ").replace(",", "")
       )}&type=track&limit=1`
     );
+
+    if (res.data.tracks.items.length == 0) {
+      res = await api.get(
+        `/search?q=${encodeURI(
+          "track:" +
+            title
+              .replace(" UND ", " ")
+              .replace("AE", "ä")
+              .replace("OE", "ä")
+              .replace("UE", "ä") +
+            " artist:" +
+            artist
+              .replace("AE", "ä")
+              .replace("OE", "ä")
+              .replace("UE", "ä")
+              .replace(" UND ", " ")
+              .replace(" MIT ", " ")
+              .replace(",", "")
+        )}&type=track&limit=1`
+      );
+    }
+    if (res.data.tracks.items.length != 1) {
+      return;
+    }
     findUri = res.data.tracks.items[0].uri;
     try {
       let res = await api.post(`/playlists/3WeU50f5AqaM0Z0aYQNoEz/tracks`, {
