@@ -228,13 +228,13 @@ async function addToPlaylist(title, artist) {
     let res = await api.get(
       `/search?q=${encodeURI(
         "track:" +
-          title.replace(" ", "+") +
+          title.replaceAll(" ", "+") +
           " artist:" +
           artist
-            .replace(" UND ", "+")
-            .replace(" MIT ", "+")
-            .replace(",", "")
-            .replace(" ", "+")
+            .replaceAll(" UND ", "+")
+            .replaceAll(" MIT ", "+")
+            .replaceAll(",", "")
+            .replaceAll(" ", "+")
       )}&type=track&limit=1`
     );
 
@@ -243,20 +243,20 @@ async function addToPlaylist(title, artist) {
         `/search?q=${encodeURI(
           "track:" +
             title
-              .replace(" UND ", "+")
-              .replace("AE", "Ä")
-              .replace("OE", "Ö")
-              .replace("UE", "Ü")
-              .replace(" ", "+") +
+              .replaceAll(" UND ", "+")
+              .replaceAll("AE", "Ä")
+              .replaceAll("OE", "Ö")
+              .replaceAll("UE", "Ü")
+              .replaceAll(" ", "+") +
             " artist:" +
             artist
-              .replace("AE", "Ä")
-              .replace("OE", "Ö")
-              .replace("UE", "Ü")
-              .replace(" UND ", "+")
-              .replace(" MIT ", "+")
-              .replace(",", "")
-              .replace(" ", "+")
+              .replaceAll("AE", "Ä")
+              .replaceAll("OE", "Ö")
+              .replaceAll("UE", "Ü")
+              .replaceAll(" UND ", "+")
+              .replaceAll(" MIT ", "+")
+              .replaceAll(",", "")
+              .replaceAll(" ", "+")
         )}&type=track&limit=1`
       );
     }
@@ -270,11 +270,13 @@ async function addToPlaylist(title, artist) {
         uris: [findUri],
       });
     } catch (error) {
-      console.log(error.code);
+      if (error.code) console.log(error.code);
+      else console.log(error);
       return;
     }
   } catch (error) {
-    console.log(error.code);
+    if (error.code) console.log(error.code);
+    else console.log(error);
     return;
   }
 }
