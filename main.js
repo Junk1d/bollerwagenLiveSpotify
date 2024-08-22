@@ -192,7 +192,7 @@ function Main() {
       });
     try {
       const response = await api.get("/playlists/3WeU50f5AqaM0Z0aYQNoEz");
-      console.log(response.data.tracks.total);
+      if (response.data.tracks.total < 20) return;
       let d = new Date();
       let t = d.getTime();
       t = t - 2 * 60 * 60 * 1000;
@@ -240,14 +240,14 @@ async function addToPlaylist(title, artist) {
           "track:" +
             title
               .replace(" UND ", " ")
-              .replace("AE", "ä")
-              .replace("OE", "ä")
-              .replace("UE", "ä") +
+              .replace("AE", "Ä")
+              .replace("OE", "Ö")
+              .replace("UE", "Ü") +
             " artist:" +
             artist
-              .replace("AE", "ä")
-              .replace("OE", "ä")
-              .replace("UE", "ä")
+              .replace("AE", "Ä")
+              .replace("OE", "Ö")
+              .replace("UE", "Ü")
               .replace(" UND ", " ")
               .replace(" MIT ", " ")
               .replace(",", "")
@@ -255,6 +255,7 @@ async function addToPlaylist(title, artist) {
       );
     }
     if (res.data.tracks.items.length != 1) {
+      console.log("Non track found");
       return;
     }
     findUri = res.data.tracks.items[0].uri;
