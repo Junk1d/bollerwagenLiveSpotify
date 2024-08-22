@@ -228,9 +228,13 @@ async function addToPlaylist(title, artist) {
     let res = await api.get(
       `/search?q=${encodeURI(
         "track:" +
-          title +
+          title.replace(" ", "+") +
           " artist:" +
-          artist.replace(" UND ", " ").replace(" MIT ", " ").replace(",", "")
+          artist
+            .replace(" UND ", "+")
+            .replace(" MIT ", "+")
+            .replace(",", "")
+            .replace(" ", "+")
       )}&type=track&limit=1`
     );
 
@@ -239,18 +243,20 @@ async function addToPlaylist(title, artist) {
         `/search?q=${encodeURI(
           "track:" +
             title
-              .replace(" UND ", " ")
+              .replace(" UND ", "+")
               .replace("AE", "Ä")
               .replace("OE", "Ö")
-              .replace("UE", "Ü") +
+              .replace("UE", "Ü")
+              .replace(" ", "+") +
             " artist:" +
             artist
               .replace("AE", "Ä")
               .replace("OE", "Ö")
               .replace("UE", "Ü")
-              .replace(" UND ", " ")
-              .replace(" MIT ", " ")
+              .replace(" UND ", "+")
+              .replace(" MIT ", "+")
               .replace(",", "")
+              .replace(" ", "+")
         )}&type=track&limit=1`
       );
     }
