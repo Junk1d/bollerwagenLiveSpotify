@@ -177,15 +177,18 @@ async function SpCodeToToken(Code) {
   }
   // else TokenSpotify();
 }
+let knownSongs;
 Main();
 function Main() {
+  knownSongs = JSON.parse(fs.readFileSync("./knownSongs.json", "utf8"));
+  console.log(knownSongs);
   let lastAdded;
   async function runnabale() {
     fetch(radiobollerwagen, { method: "GET" })
       .then((res) => res.json())
       .then((json) => {
         if (json.songs[0].title != lastAdded) {
-          console.log(json.songs[0].title);
+          console.log(`${json.songs[0].title} - ${json.songs[0].artist}`);
           lastAdded = json.songs[0].title;
           addToPlaylist(json.songs[0].title, json.songs[0].artist);
         }
@@ -225,46 +228,67 @@ function Main() {
 async function addToPlaylist(title, artist) {
   let findUri;
   try {
-    let res = await api.get(
-      `/search?q=${encodeURI(
-        "track:" +
-          title.replaceAll(" ", "+") +
-          " artist:" +
-          artist
-            .replaceAll(" UND ", "+")
-            .replaceAll(" MIT ", "+")
-            .replaceAll(",", "")
-            .replaceAll(" ", "+")
-      )}&type=track&limit=1`
-    );
-
-    if (res.data.tracks.items.length == 0) {
-      res = await api.get(
+    if (knownSongs[`${title} ${artist}`]) {
+      findUri = knownSongs[`${title} ${artist}`];
+    } else {
+      let res = await api.get(
         `/search?q=${encodeURI(
           "track:" +
-            title
-              .replaceAll(" UND ", "+")
-              .replaceAll("AE", "Ä")
-              .replaceAll("OE", "Ö")
-              .replaceAll("UE", "Ü")
-              .replaceAll(" ", "+") +
+            title.replaceAll(" ", "+") +
             " artist:" +
             artist
-              .replaceAll("AE", "Ä")
-              .replaceAll("OE", "Ö")
-              .replaceAll("UE", "Ü")
-              .replaceAll(" UND ", "+")
-              .replaceAll(" MIT ", "+")
+              .replaceAll(" UND ", " ")
+              .replaceAll(" MIT ", " ")
               .replaceAll(",", "")
+              .slice(0, 25)
               .replaceAll(" ", "+")
         )}&type=track&limit=1`
       );
+
+      if (res.data.tracks.items.length == 0) {
+        res = await api.get(
+          `/search?q=${encodeURI(
+            "track:" +
+              title
+                .replaceAll(" UND ", " ")
+                .replaceAll("AE", "Ä")
+                .replaceAll("OE", "Ö")
+                .replaceAll("UE", "Ü")
+                .replaceAll(" ", "+") +
+              " artist:" +
+              artist
+                .replaceAll("AE", "Ä")
+                .replaceAll("OE", "Ö")
+                .replaceAll("UE", "Ü")
+                .replaceAll(" UND ", " ")
+                .replaceAll(" MIT ", " ")
+                .replaceAll(",", "")
+                .slice(0, 25)
+                .replaceAll(" ", "+")
+          )}&type=track&limit=1`
+        );
+      }
+      if (res.data.tracks.items.length == 0) {
+        res = await api.get(
+          `/search?q=${encodeURI(
+            title +
+              " " +
+              artist
+                .replaceAll(" UND ", " ")
+                .replaceAll(" MIT ", " ")
+                .replaceAll(",", "")
+                .slice(0, 25)
+          )}&type=track&limit=1`
+        );
+        if (res.data.tracks.items.length != 1) {
+          console.log("--- Non track found ---");
+          return;
+        }
+        knownSongs[`${title} ${artist}`] = res.data.tracks.items[0].uri;
+        fs.writeFileSync("./knownSongs.json", JSON.stringify(findUri));
+      }
+      findUri = res.data.tracks.items[0].uri;
     }
-    if (res.data.tracks.items.length != 1) {
-      console.log("Non track found");
-      return;
-    }
-    findUri = res.data.tracks.items[0].uri;
     try {
       let res = await api.post(`/playlists/3WeU50f5AqaM0Z0aYQNoEz/tracks`, {
         uris: [findUri],
