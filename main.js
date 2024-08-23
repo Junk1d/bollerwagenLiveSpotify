@@ -285,7 +285,11 @@ async function addToPlaylist(title, artist) {
           return;
         }
         knownSongs[`${title} ${artist}`] = res.data.tracks.items[0].uri;
-        fs.writeFileSync("./knownSongs.json", JSON.stringify(findUri));
+        try {
+          fs.writeFileSync("./knownSongs.json", JSON.stringify(knownSongs));
+        } catch (error) {
+          console.error(error);
+        }
       }
       findUri = res.data.tracks.items[0].uri;
     }
